@@ -1,0 +1,148 @@
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
+
+type Locale = "en" | "tr";
+
+interface Translations {
+  [key: string]: {
+    en: string;
+    tr: string;
+  };
+}
+
+const translations: Translations = {
+  // Navigation
+  "nav.home": { en: "Home", tr: "Ana Sayfa" },
+  "nav.tours": { en: "Tours", tr: "Turlar" },
+  "nav.about": { en: "About", tr: "Hakkımızda" },
+  "nav.faq": { en: "FAQ", tr: "SSS" },
+  "nav.reviews": { en: "Reviews", tr: "Yorumlar" },
+  "nav.blog": { en: "Blog", tr: "Blog" },
+  "nav.contact": { en: "Contact", tr: "İletişim" },
+  
+  // Hero
+  "hero.title": { en: "Discover Paradise in Phuket", tr: "Phuket'te Cenneti Keşfedin" },
+  "hero.subtitle": { en: "Experience unforgettable adventures with our premium guided tours", tr: "Premium rehberli turlarımızla unutulmaz maceralar yaşayın" },
+  "hero.cta.book": { en: "Book Now", tr: "Hemen Rezervasyon" },
+  "hero.cta.explore": { en: "Explore Tours", tr: "Turları Keşfet" },
+  
+  // Tours
+  "tours.title": { en: "Our Tours", tr: "Turlarımız" },
+  "tours.featured": { en: "Featured Tours", tr: "Öne Çıkan Turlar" },
+  "tours.popular": { en: "Popular Tours", tr: "Popüler Turlar" },
+  "tours.all": { en: "All Tours", tr: "Tüm Turlar" },
+  "tours.from": { en: "From", tr: "Başlayan" },
+  "tours.duration": { en: "Duration", tr: "Süre" },
+  "tours.viewDetails": { en: "View Details", tr: "Detayları Gör" },
+  "tours.highlights": { en: "Highlights", tr: "Öne Çıkanlar" },
+  "tours.itinerary": { en: "Itinerary", tr: "Program" },
+  "tours.includes": { en: "What's Included", tr: "Dahil Olanlar" },
+  "tours.excludes": { en: "What's Not Included", tr: "Dahil Olmayanlar" },
+  "tours.pickupInfo": { en: "Pickup Information", tr: "Alış Bilgileri" },
+  "tours.cancellation": { en: "Cancellation Policy", tr: "İptal Politikası" },
+  
+  // Booking Form
+  "booking.title": { en: "Book This Tour", tr: "Bu Turu Rezerve Et" },
+  "booking.name": { en: "Full Name", tr: "Ad Soyad" },
+  "booking.email": { en: "Email", tr: "E-posta" },
+  "booking.phone": { en: "Phone / WhatsApp", tr: "Telefon / WhatsApp" },
+  "booking.date": { en: "Preferred Date", tr: "Tercih Edilen Tarih" },
+  "booking.people": { en: "Number of People", tr: "Kişi Sayısı" },
+  "booking.hotel": { en: "Hotel Name", tr: "Otel Adı" },
+  "booking.message": { en: "Message", tr: "Mesaj" },
+  "booking.submit": { en: "Send Inquiry", tr: "Talep Gönder" },
+  "booking.success": { en: "Thank you! We'll contact you shortly.", tr: "Teşekkürler! En kısa sürede sizinle iletişime geçeceğiz." },
+  
+  // About
+  "about.title": { en: "About Us", tr: "Hakkımızda" },
+  "about.story": { en: "Our Story", tr: "Hikayemiz" },
+  "about.mission": { en: "Our Mission", tr: "Misyonumuz" },
+  "about.values": { en: "Our Values", tr: "Değerlerimiz" },
+  
+  // FAQ
+  "faq.title": { en: "Frequently Asked Questions", tr: "Sıkça Sorulan Sorular" },
+  "faq.subtitle": { en: "Find answers to common questions", tr: "Sık sorulan sorulara cevaplar" },
+  
+  // Reviews
+  "reviews.title": { en: "What Our Guests Say", tr: "Misafirlerimiz Ne Diyor" },
+  "reviews.subtitle": { en: "Real experiences from real travelers", tr: "Gerçek gezginlerden gerçek deneyimler" },
+  
+  // Blog
+  "blog.title": { en: "Travel Blog", tr: "Seyahat Blogu" },
+  "blog.readMore": { en: "Read More", tr: "Devamını Oku" },
+  "blog.subtitle": { en: "Tips, guides and stories from Phuket", tr: "Phuket'ten ipuçları, rehberler ve hikayeler" },
+  
+  // Contact
+  "contact.title": { en: "Contact Us", tr: "İletişim" },
+  "contact.subtitle": { en: "We'd love to hear from you", tr: "Sizden haber almak isteriz" },
+  "contact.address": { en: "Address", tr: "Adres" },
+  "contact.email": { en: "Email", tr: "E-posta" },
+  "contact.phone": { en: "Phone", tr: "Telefon" },
+  "contact.hours": { en: "Working Hours", tr: "Çalışma Saatleri" },
+  
+  // Footer
+  "footer.quickLinks": { en: "Quick Links", tr: "Hızlı Linkler" },
+  "footer.popularTours": { en: "Popular Tours", tr: "Popüler Turlar" },
+  "footer.newsletter": { en: "Newsletter", tr: "Bülten" },
+  "footer.newsletterText": { en: "Subscribe for exclusive offers", tr: "Özel teklifler için abone olun" },
+  "footer.subscribe": { en: "Subscribe", tr: "Abone Ol" },
+  "footer.rights": { en: "All rights reserved", tr: "Tüm hakları saklıdır" },
+  
+  // Common
+  "common.loading": { en: "Loading...", tr: "Yükleniyor..." },
+  "common.error": { en: "An error occurred", tr: "Bir hata oluştu" },
+  "common.noResults": { en: "No results found", tr: "Sonuç bulunamadı" },
+  "common.search": { en: "Search", tr: "Ara" },
+  "common.filter": { en: "Filter", tr: "Filtre" },
+  "common.close": { en: "Close", tr: "Kapat" },
+  "common.back": { en: "Back", tr: "Geri" },
+};
+
+interface LanguageContextType {
+  locale: Locale;
+  setLocale: (locale: Locale) => void;
+  t: (key: string) => string;
+}
+
+const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
+
+export function LanguageProvider({ children }: { children: ReactNode }) {
+  const [locale, setLocale] = useState<Locale>(() => {
+    const saved = localStorage.getItem("locale");
+    return (saved === "en" || saved === "tr") ? saved : "en";
+  });
+
+  useEffect(() => {
+    localStorage.setItem("locale", locale);
+    document.documentElement.lang = locale;
+  }, [locale]);
+
+  const t = (key: string): string => {
+    const translation = translations[key];
+    if (!translation) return key;
+    return translation[locale] || key;
+  };
+
+  return (
+    <LanguageContext.Provider value={{ locale, setLocale, t }}>
+      {children}
+    </LanguageContext.Provider>
+  );
+}
+
+export function useLanguage() {
+  const context = useContext(LanguageContext);
+  if (!context) {
+    throw new Error("useLanguage must be used within a LanguageProvider");
+  }
+  return context;
+}
+
+export function getTranslatedField<T extends Record<string, unknown>>(
+  item: T,
+  field: string,
+  locale: Locale
+): string {
+  const localizedField = `${field}${locale.charAt(0).toUpperCase() + locale.slice(1)}` as keyof T;
+  const value = item[localizedField];
+  return typeof value === "string" ? value : "";
+}
