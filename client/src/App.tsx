@@ -69,13 +69,16 @@ function Router() {
       <Route path="/contact" component={Contact} />
       
       <Route path="/admin/login" component={AdminLogin} />
-      <Route path="/admin">
-        {() => (
-          <ProtectedRoute>
-            <AdminDashboard />
-          </ProtectedRoute>
-        )}
-      </Route>
+      <Route path="/admin" component={() => (
+        <ProtectedRoute>
+          <AdminDashboard />
+        </ProtectedRoute>
+      )} />
+      <Route path="/admin/dashboard" component={() => (
+        <ProtectedRoute>
+          <AdminDashboard />
+        </ProtectedRoute>
+      )} />
       <Route path="/admin/tours">
         {() => (
           <ProtectedRoute>
