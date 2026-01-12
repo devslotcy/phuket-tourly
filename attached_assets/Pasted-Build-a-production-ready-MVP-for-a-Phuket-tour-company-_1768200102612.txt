@@ -1,0 +1,96 @@
+Build a production-ready MVP for a Phuket tour company as a Next.js 14 (App Router) + TypeScript project.
+
+STACK (must use):
+- Next.js 14+ App Router
+- TailwindCSS + shadcn/ui
+- Prisma ORM
+- SQLite default, optional Postgres via DATABASE_URL
+- NextAuth Credentials provider for admin login
+- bcrypt password hashing
+- next-intl for EN + TR
+
+CORE REQUIREMENTS (deliver fully working):
+1) Database (Prisma) models:
+- AdminUser (email, passwordHash, role, createdAt)
+- Category (id, name, slug)
+- Tour (id, slug, featured, popular, priceFrom, duration, categoryId, createdAt, updatedAt)
+- TourTranslation (tourId, locale, title, summary, highlights, itinerary, includes, excludes, pickupInfo, cancellationPolicy, seoTitle, seoDescription)
+- TourImage (tourId, url, alt)
+- Inquiry (tourId nullable, name, email, phone, date, peopleCount, hotel, message, status NEW/CONTACTED/CONFIRMED/CANCELLED, internalNotes, createdAt)
+
+2) Admin credentials + seeding (IMPORTANT):
+- On first run, if no admin exists, seed:
+  Email: admin@phuket-tours.com
+  Password: Admin123!
+- Hash password with bcrypt. Do NOT store plaintext.
+- Print these credentials to terminal on first successful seed AND write them in README.md.
+- Add /admin/change-password page to update password safely.
+
+3) Auth:
+- Protect all /admin routes.
+- Unauthed users are redirected to /admin/login.
+
+4) Admin panel pages under /admin:
+- Dashboard: counts (tours, inquiries, new inquiries)
+- Tours CRUD:
+  - create/edit/delete tours, translations EN/TR, category, duration, priceFrom, featured/popular, SEO fields, images
+- Categories CRUD
+- Inquiries:
+  - list + detail view
+  - status updates + internal notes
+
+5) Public pages:
+- Home page minimal
+- Tours listing page (/tours) showing cards
+- Tour detail (/tours/[slug]) with gallery + inquiry form
+
+6) Booking inquiry form:
+- Form fields: name, email, phone/WhatsApp, date, peopleCount, hotel, message
+- Validate with zod + react-hook-form
+- Save to DB, show success UI
+
+SCRIPTS:
+- prisma:migrate
+- prisma:seed
+- npm run dev works in Replit.
+
+FILES:
+- .env.example with DATABASE_URL and NEXTAUTH_SECRET
+- README.md with setup + admin login info + how to migrate/seed.
+
+Deliver a working project with sample seed data: at least 6 tours, 3 categories, 10 inquiries.
+No TODOs for core features.
+
+
+Now improve the same project with premium UI + strong SEO + content modules.
+
+DESIGN:
+- Premium travel brand look (hero images, clean typography, whitespace, subtle animations)
+- Fully responsive
+- Add sticky WhatsApp button and prominent CTAs.
+
+ADD CONTENT MODULES (with Prisma + Admin CRUD + Public pages):
+- FAQ (question, answer, locale)
+- Review (name, rating, text, source, createdAt)
+- BlogPost (slug, createdAt) + BlogPostTranslation (locale, title, content markdown, seoTitle, seoDescription) + tags
+
+ADMIN:
+- Add CRUD for FAQs, Reviews, Blog posts
+- Add simple markdown editor for blog content (basic textarea ok).
+
+PUBLIC:
+- About page, FAQ page (accordion), Reviews page, Blog listing + Blog detail, Contact page.
+
+SEO (must implement):
+- Per-page metadata (title/description/OG)
+- Clean slugs
+- Generate sitemap.xml and robots.txt
+- JSON-LD:
+  - LocalBusiness on home
+  - Tour schema on tour detail
+  - FAQPage schema on FAQ page
+- Performance: next/image everywhere, lazy loading.
+
+OUTPUT:
+- Ensure everything is wired end-to-end, admin can manage all content.
+- Update README.md with new features and admin routes.
