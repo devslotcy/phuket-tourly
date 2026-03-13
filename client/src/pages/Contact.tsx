@@ -1,34 +1,39 @@
-import { MapPin, Mail, Phone, Clock, MessageCircle } from "lucide-react";
+import { MapPin, Mail, Phone, Clock, MessageCircle, MapIcon } from "lucide-react";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { InquiryForm } from "@/components/forms/InquiryForm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/lib/i18n";
+import { SEO } from "@/components/SEO";
+import { LocalBusinessSchema } from "@/components/StructuredData";
+import { COMPANY } from "@shared/company";
 
 const contactInfo = [
   {
     icon: MapPin,
     titleEn: "Address",
     titleTr: "Adres",
-    content: "123 Beach Road, Patong, Phuket 83150, Thailand",
+    content: COMPANY.address.full,
   },
   {
     icon: Mail,
     titleEn: "Email",
     titleTr: "E-posta",
-    content: "info@phuket-tours.com",
+    content: COMPANY.email,
+    link: `mailto:${COMPANY.email}`,
   },
   {
     icon: Phone,
     titleEn: "Phone",
     titleTr: "Telefon",
-    content: "+66 76 123 456",
+    content: COMPANY.phone.display,
+    link: `tel:${COMPANY.phone.international}`,
   },
   {
     icon: Clock,
     titleEn: "Working Hours",
     titleTr: "Çalışma Saatleri",
-    content: "Mon-Sun: 8:00 AM - 8:00 PM",
+    content: COMPANY.hours.display,
   },
 ];
 
@@ -37,6 +42,13 @@ export default function Contact() {
 
   return (
     <PublicLayout>
+      <SEO
+        title="Contact Us"
+        description={`Get in touch with C Plus Andaman Travel in Patong, Phuket. Visit us at ${COMPANY.address.full} or call ${COMPANY.phone.display}. Open daily until 21:00.`}
+        keywords={`${COMPANY.seo.keywords}, contact, Patong travel agency, Phuket contact`}
+        url={`${COMPANY.website}/contact`}
+      />
+      <LocalBusinessSchema />
       <section className="relative py-20 md:py-32 overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center"
@@ -82,15 +94,29 @@ export default function Contact() {
                         <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                           <item.icon className="h-6 w-6 text-primary" />
                         </div>
-                        <div>
+                        <div className="flex-1">
                           <h3 className="font-semibold mb-1">
                             {locale === "tr" ? item.titleTr : item.titleEn}
                           </h3>
-                          <p className="text-muted-foreground">{item.content}</p>
+                          {item.link ? (
+                            <a href={item.link} className="text-muted-foreground hover:text-foreground transition-colors">
+                              {item.content}
+                            </a>
+                          ) : (
+                            <p className="text-muted-foreground">{item.content}</p>
+                          )}
                         </div>
                       </CardContent>
                     </Card>
                   ))}
+
+                  {/* Google Maps Direction Button */}
+                  <a href={COMPANY.maps.directionsUrl} target="_blank" rel="noopener noreferrer" className="block">
+                    <Button variant="outline" className="w-full gap-2" size="lg">
+                      <MapIcon className="h-5 w-5" />
+                      {t("contact.getDirections")}
+                    </Button>
+                  </a>
                 </div>
               </div>
 

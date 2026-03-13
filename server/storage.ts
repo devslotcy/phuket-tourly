@@ -80,6 +80,11 @@ export interface IStorage {
     totalBlogPosts: number;
     totalFaqs: number;
   }>;
+
+  getMonthlyInquiriesStats(): Promise<Array<{
+    month: string;
+    inquiries: number;
+  }>>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -350,6 +355,45 @@ export class DatabaseStorage implements IStorage {
       totalBlogPosts: Number(blogCount[0]?.count || 0),
       totalFaqs: Number(faqCount[0]?.count || 0),
     };
+  }
+
+  async getMonthlyInquiriesStats(): Promise<Array<{ month: string; inquiries: number }>> {
+    // Get all inquiries with their creation date
+    const allInquiries = await db.select({
+      createdAt: inquiries.createdAt,
+    }).from(inquiries);
+
+    // Create a complete 12-month array with all months
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const now = new Date();
+    const currentMonth = now.getMonth(); // 0-11
+
+    // Reorder months to show last 12 months ending with current month
+    const orderedMonths = [
+      ...months.slice(currentMonth + 1),
+      ...months.slice(0, currentMonth + 1)
+    ];
+
+    // Count inquiries by month
+    const monthlyCounts = new Map<string, number>();
+
+    allInquiries.forEach(inquiry => {
+      const date = new Date(inquiry.createdAt);
+      const monthIndex = date.getMonth();
+      const monthName = months[monthIndex];
+
+      // Only count inquiries from the last 12 months
+      const monthsAgo = (now.getFullYear() - date.getFullYear()) * 12 + (now.getMonth() - date.getMonth());
+      if (monthsAgo >= 0 && monthsAgo < 12) {
+        monthlyCounts.set(monthName, (monthlyCounts.get(monthName) || 0) + 1);
+      }
+    });
+
+    // Return complete 12-month data with 0 for missing months
+    return orderedMonths.map(month => ({
+      month,
+      inquiries: monthlyCounts.get(month) || 0
+    }));
   }
 }
 

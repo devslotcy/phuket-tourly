@@ -1,9 +1,10 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useParams, useLocation } from "wouter";
 import { Loader2, ArrowLeft } from "lucide-react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -64,6 +65,7 @@ export default function TourForm() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const isEditing = id && id !== "new";
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
 
   const { data: tour, isLoading: tourLoading } = useQuery<TourWithDetails>({
     queryKey: ["/api/admin/tours", id],
@@ -110,6 +112,8 @@ export default function TourForm() {
     if (tour) {
       const enTrans = tour.translations.find((t) => t.locale === "en");
       const trTrans = tour.translations.find((t) => t.locale === "tr");
+      const urls = tour.images.map((img) => img.url);
+      setImageUrls(urls);
       form.reset({
         slug: tour.slug,
         featured: tour.featured,
@@ -137,7 +141,7 @@ export default function TourForm() {
         cancellationPolicyTr: trTrans?.cancellationPolicy || "",
         seoTitleTr: trTrans?.seoTitle || "",
         seoDescriptionTr: trTrans?.seoDescription || "",
-        images: tour.images.map((img) => img.url).join("\n"),
+        images: urls.join("\n"),
       });
     }
   }, [tour, form]);
@@ -179,7 +183,7 @@ export default function TourForm() {
             seoDescription: data.seoDescriptionTr,
           },
         },
-        images: data.images.split("\n").filter((url) => url.trim()).map((url) => ({ url: url.trim() })),
+        images: imageUrls.map((url) => ({ url })),
       };
 
       if (isEditing) {
@@ -487,23 +491,7 @@ export default function TourForm() {
                 <CardTitle>Images</CardTitle>
               </CardHeader>
               <CardContent>
-                <FormField
-                  control={form.control}
-                  name="images"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Image URLs (one per line)</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          rows={5}
-                          placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <ImageUpload images={imageUrls} onChange={setImageUrls} />
               </CardContent>
             </Card>
 

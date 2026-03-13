@@ -6,6 +6,7 @@ import { Loader2, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { WHATSAPP_NUMBER } from "@/lib/whatsapp";
 import {
   Form,
   FormControl,
@@ -55,7 +56,7 @@ export function InquiryForm({ tourId, tourTitle }: InquiryFormProps) {
       setIsSuccess(true);
       form.reset();
       toast({
-        title: t("booking.success"),
+        title: t("inquiry.success"),
       });
     },
     onError: () => {
@@ -74,10 +75,29 @@ export function InquiryForm({ tourId, tourTitle }: InquiryFormProps) {
     return (
       <div className="text-center py-8 space-y-4">
         <CheckCircle className="h-16 w-16 text-green-500 mx-auto" />
-        <h3 className="text-xl font-semibold">{t("booking.success")}</h3>
-        <Button onClick={() => setIsSuccess(false)} variant="outline">
-          {t("common.back")}
-        </Button>
+        <h3 className="text-xl font-semibold">{t("inquiry.success")}</h3>
+        <p className="text-muted-foreground">{t("inquiry.success")}</p>
+        <div className="flex flex-col gap-2">
+          <Button
+            onClick={() => {
+              if (tourTitle) {
+                const params = form.getValues();
+                window.open(
+                  `https://wa.me/${WHATSAPP_NUMBER.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(
+                    `Hi, I submitted an inquiry for ${tourTitle}. ${params.date ? `Date: ${params.date}` : ''} ${params.peopleCount ? `People: ${params.peopleCount}` : ''}`
+                  )}`,
+                  "_blank"
+                );
+              }
+            }}
+            className="w-full bg-[#25D366] hover:bg-[#20BA5A]"
+          >
+            {t("inquiry.whatsappCta")}
+          </Button>
+          <Button onClick={() => setIsSuccess(false)} variant="outline">
+            {t("common.back")}
+          </Button>
+        </div>
       </div>
     );
   }
@@ -97,7 +117,7 @@ export function InquiryForm({ tourId, tourTitle }: InquiryFormProps) {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t("booking.name")} *</FormLabel>
+              <FormLabel>{t("inquiry.name")} *</FormLabel>
               <FormControl>
                 <Input {...field} data-testid="input-inquiry-name" />
               </FormControl>
@@ -111,7 +131,7 @@ export function InquiryForm({ tourId, tourTitle }: InquiryFormProps) {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t("booking.email")} *</FormLabel>
+              <FormLabel>{t("inquiry.email")} *</FormLabel>
               <FormControl>
                 <Input type="email" {...field} data-testid="input-inquiry-email" />
               </FormControl>
@@ -125,7 +145,7 @@ export function InquiryForm({ tourId, tourTitle }: InquiryFormProps) {
           name="phone"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t("booking.phone")}</FormLabel>
+              <FormLabel>{t("inquiry.phone")}</FormLabel>
               <FormControl>
                 <Input {...field} data-testid="input-inquiry-phone" />
               </FormControl>
@@ -140,9 +160,14 @@ export function InquiryForm({ tourId, tourTitle }: InquiryFormProps) {
             name="date"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t("booking.date")}</FormLabel>
+                <FormLabel>{t("inquiry.date")}</FormLabel>
                 <FormControl>
-                  <Input type="date" {...field} data-testid="input-inquiry-date" />
+                  <Input
+                    type="date"
+                    {...field}
+                    min={new Date().toISOString().split('T')[0]}
+                    data-testid="input-inquiry-date"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -154,7 +179,7 @@ export function InquiryForm({ tourId, tourTitle }: InquiryFormProps) {
             name="peopleCount"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t("booking.people")}</FormLabel>
+                <FormLabel>{t("inquiry.people")}</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
@@ -175,7 +200,7 @@ export function InquiryForm({ tourId, tourTitle }: InquiryFormProps) {
           name="hotel"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t("booking.hotel")}</FormLabel>
+              <FormLabel>{t("inquiry.hotel")}</FormLabel>
               <FormControl>
                 <Input {...field} data-testid="input-inquiry-hotel" />
               </FormControl>
@@ -189,7 +214,7 @@ export function InquiryForm({ tourId, tourTitle }: InquiryFormProps) {
           name="message"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t("booking.message")}</FormLabel>
+              <FormLabel>{t("inquiry.message")}</FormLabel>
               <FormControl>
                 <Textarea rows={4} {...field} data-testid="input-inquiry-message" />
               </FormControl>
@@ -205,7 +230,7 @@ export function InquiryForm({ tourId, tourTitle }: InquiryFormProps) {
           data-testid="button-submit-inquiry"
         >
           {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {t("booking.submit")}
+          {t("inquiry.submit")}
         </Button>
       </form>
     </Form>

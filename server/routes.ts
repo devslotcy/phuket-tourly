@@ -2,12 +2,46 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import session from "express-session";
 import bcrypt from "bcrypt";
+import multer from "multer";
+import path from "path";
 import { storage } from "./storage";
 import { inquiryFormSchema } from "@shared/schema";
 import { z } from "zod";
 import MemoryStore from "memorystore";
+import { sendWhatsAppNotification, logInquiryNotification } from "./whatsapp-notifier";
 
 const MemoryStoreSession = MemoryStore(session);
+
+// Configure multer for file uploads
+const uploadStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "public/uploads/");
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  },
+});
+
+const upload = multer({
+  storage: uploadStorage,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png|gif|webp/;
+    const extname = allowedTypes.test(
+      path.extname(file.originalname).toLowerCase()
+    );
+    const mimetype = allowedTypes.test(file.mimetype);
+
+    if (mimetype && extname) {
+      return cb(null, true);
+    } else {
+      cb(new Error("Only image files are allowed!"));
+    }
+  },
+});
 
 declare module "express-session" {
   interface SessionData {
@@ -66,6 +100,56 @@ export async function registerRoutes(
     });
   });
 
+  // Change password endpoint
+  app.post("/api/admin/change-password", requireAdmin, async (req, res) => {
+    try {
+      const { currentPassword, newPassword } = req.body;
+
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      if (newPassword.length < 6) {
+        return res.status(400).json({ error: "New password must be at least 6 characters" });
+      }
+
+      const admin = await storage.getAdminById(req.session.adminId!);
+      if (!admin) {
+        return res.status(401).json({ error: "Admin not found" });
+      }
+
+      const valid = await bcrypt.compare(currentPassword, admin.passwordHash);
+      if (!valid) {
+        return res.status(401).json({ error: "Current password is incorrect" });
+      }
+
+      const newPasswordHash = await bcrypt.hash(newPassword, 10);
+      await storage.updateAdminPassword(admin.id, newPasswordHash);
+
+      res.json({ success: true, message: "Password updated successfully" });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to change password" });
+    }
+  });
+
+  // Image upload endpoint
+  app.post(
+    "/api/admin/upload",
+    requireAdmin,
+    upload.single("image"),
+    (req, res) => {
+      try {
+        if (!req.file) {
+          return res.status(400).json({ error: "No file uploaded" });
+        }
+        const imageUrl = `/uploads/${req.file.filename}`;
+        res.json({ url: imageUrl });
+      } catch (error) {
+        res.status(500).json({ error: "Upload failed" });
+      }
+    }
+  );
+
   app.get("/api/admin/me", async (req, res) => {
     if (!req.session.adminId) {
       return res.status(401).json({ error: "Not authenticated" });
@@ -83,6 +167,15 @@ export async function registerRoutes(
       res.json(stats);
     } catch (error) {
       res.status(500).json({ error: "Failed to get stats" });
+    }
+  });
+
+  app.get("/api/admin/stats/monthly-inquiries", requireAdmin, async (req, res) => {
+    try {
+      const monthlyStats = await storage.getMonthlyInquiriesStats();
+      res.json(monthlyStats);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get monthly inquiries stats" });
     }
   });
 
@@ -212,6 +305,16 @@ export async function registerRoutes(
     try {
       const parsed = inquiryFormSchema.parse(req.body);
       const inquiry = await storage.createInquiry(parsed);
+
+      // Send notifications (console log + optional WhatsApp)
+      logInquiryNotification(inquiry);
+
+      // Attempt to send WhatsApp notification (requires Twilio setup)
+      // This will fail gracefully if Twilio is not configured
+      sendWhatsAppNotification(inquiry).catch((error) => {
+        console.error("WhatsApp notification failed:", error);
+      });
+
       res.json(inquiry);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -388,6 +491,90 @@ export async function registerRoutes(
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ error: "Failed to delete blog post" });
+    }
+  });
+
+  // Sitemap cache
+  let sitemapCache: { xml: string; timestamp: number } | null = null;
+  const SITEMAP_CACHE_TTL = 60 * 60 * 1000; // 1 hour
+
+  // Function to invalidate sitemap cache (called after content changes)
+  function invalidateSitemapCache() {
+    sitemapCache = null;
+    console.log("✓ Sitemap cache invalidated");
+  }
+
+  // Sitemap.xml endpoint with caching
+  app.get("/sitemap.xml", async (req, res) => {
+    try {
+      // Check cache
+      if (sitemapCache && Date.now() - sitemapCache.timestamp < SITEMAP_CACHE_TTL) {
+        res.header("Content-Type", "application/xml");
+        res.header("X-Cache", "HIT");
+        return res.send(sitemapCache.xml);
+      }
+
+      const baseUrl = process.env.SITE_URL || "https://cplusandaman.com";
+      const currentDate = new Date().toISOString().split("T")[0];
+
+      // Static pages
+      const staticPages = [
+        { url: "/", priority: "1.0", changefreq: "daily" },
+        { url: "/tours", priority: "0.9", changefreq: "daily" },
+        { url: "/about", priority: "0.7", changefreq: "monthly" },
+        { url: "/faq", priority: "0.7", changefreq: "weekly" },
+        { url: "/reviews", priority: "0.7", changefreq: "weekly" },
+        { url: "/blog", priority: "0.8", changefreq: "weekly" },
+        { url: "/contact", priority: "0.8", changefreq: "monthly" },
+      ];
+
+      // Dynamic pages - tours (only published)
+      const tours = await storage.getTours();
+      const tourPages = tours
+        .filter((tour) => tour.published)
+        .map((tour) => ({
+          url: `/tours/${tour.slug}`,
+          priority: "0.8",
+          changefreq: "weekly",
+          lastmod: tour.updatedAt ? new Date(tour.updatedAt).toISOString().split("T")[0] : currentDate,
+        }));
+
+      // Dynamic pages - blog posts (only published)
+      const blogPosts = await storage.getBlogPosts(true);
+      const blogPages = blogPosts.map((post) => ({
+        url: `/blog/${post.slug}`,
+        priority: "0.6",
+        changefreq: "monthly",
+        lastmod: post.updatedAt ? new Date(post.updatedAt).toISOString().split("T")[0] : currentDate,
+      }));
+
+      // Combine all pages
+      const allPages = [...staticPages, ...tourPages, ...blogPages];
+
+      // Generate XML
+      const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${allPages
+  .map(
+    (page) => `  <url>
+    <loc>${baseUrl}${page.url}</loc>
+    <lastmod>${page.lastmod || currentDate}</lastmod>
+    <changefreq>${page.changefreq}</changefreq>
+    <priority>${page.priority}</priority>
+  </url>`
+  )
+  .join("\n")}
+</urlset>`;
+
+      // Cache the sitemap
+      sitemapCache = { xml: sitemap, timestamp: Date.now() };
+
+      res.header("Content-Type", "application/xml");
+      res.header("X-Cache", "MISS");
+      res.send(sitemap);
+    } catch (error) {
+      console.error("Sitemap generation error:", error);
+      res.status(500).send("Error generating sitemap");
     }
   });
 

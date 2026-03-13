@@ -1,4 +1,6 @@
+import "dotenv/config";
 import express, { type Request, Response, NextFunction } from "express";
+import path from "path";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
@@ -6,6 +8,9 @@ import { seedDatabase } from "./seed";
 
 const app = express();
 const httpServer = createServer(app);
+
+// Serve uploaded files
+app.use("/uploads", express.static(path.join(process.cwd(), "public/uploads")));
 
 declare module "http" {
   interface IncomingMessage {

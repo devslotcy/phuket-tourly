@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Search, SlidersHorizontal } from "lucide-react";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { TourCard } from "@/components/tours/TourCard";
@@ -15,13 +16,31 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useLanguage } from "@/lib/i18n";
+import { SEO } from "@/components/SEO";
+import { COMPANY } from "@shared/company";
 import type { TourWithDetails, Category } from "@shared/schema";
 
 export default function Tours() {
   const { locale, t } = useLanguage();
-  const [search, setSearch] = useState("");
+  const [location] = useLocation();
+
+  // Get search query from URL parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const initialSearch = urlParams.get("q") || "";
+  const initialDate = urlParams.get("date") || "";
+
+  const [search, setSearch] = useState(initialSearch);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("featured");
+
+  // Update search when URL changes
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const queryParam = params.get("q");
+    if (queryParam) {
+      setSearch(queryParam);
+    }
+  }, [location]);
 
   const { data: tours, isLoading: toursLoading } = useQuery<TourWithDetails[]>({
     queryKey: ["/api/tours"],
@@ -48,6 +67,13 @@ export default function Tours() {
 
   return (
     <PublicLayout>
+      <SEO
+        title="All Tours in Phuket"
+        description="Browse all premium tours and excursions in Phuket with C Plus Andaman Travel. Island hopping, diving, cultural tours, and more. Contact us for personalized service."
+        keywords={`Phuket tours, ${COMPANY.seo.keywords}, island tours, diving tours, cultural tours`}
+        url={`${COMPANY.website}/tours`}
+      />
+
       <div className="relative py-20 bg-gradient-to-b from-primary/10 to-background">
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">{t("tours.title")}</h1>

@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { Eye, MessageSquare } from "lucide-react";
+import { Eye, MessageSquare, MessageCircle, Copy, Bell, BellOff } from "lucide-react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getWhatsAppLink, generateWhatsAppMessage } from "@/lib/whatsapp";
+import { useInquiryNotifications } from "@/hooks/use-inquiry-notifications";
 import {
   Table,
   TableBody,
@@ -43,9 +45,22 @@ export default function AdminInquiries() {
   const { toast } = useToast();
   const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(null);
   const [internalNotes, setInternalNotes] = useState("");
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 
   const { data: inquiries, isLoading } = useQuery<Inquiry[]>({
     queryKey: ["/api/admin/inquiries"],
+  });
+
+  // Enable notifications with sound and browser alerts
+  const { hasPermission, requestPermission } = useInquiryNotifications({
+    enableSound: notificationsEnabled,
+    enableBrowserNotification: notificationsEnabled,
+    onNewInquiry: (inquiry) => {
+      toast({
+        title: "New Inquiry Received!",
+        description: `From: ${inquiry.name} (${inquiry.email})`,
+      });
+    },
   });
 
   const updateMutation = useMutation({
@@ -84,12 +99,62 @@ export default function AdminInquiries() {
     }
   };
 
+  const newInquiriesCount = inquiries?.filter((inq) => inq.status === "NEW").length || 0;
+
+  const toggleNotifications = async () => {
+    if (!notificationsEnabled && !hasPermission) {
+      const granted = await requestPermission();
+      if (!granted) {
+        toast({
+          title: "Permission Denied",
+          description: "Please allow notifications in your browser settings",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+    setNotificationsEnabled(!notificationsEnabled);
+    toast({
+      title: notificationsEnabled ? "Notifications Disabled" : "Notifications Enabled",
+      description: notificationsEnabled
+        ? "You won't receive sound and browser notifications"
+        : "You'll receive sound and browser notifications for new inquiries",
+    });
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Inquiries</h1>
-          <p className="text-muted-foreground">Manage booking inquiries</p>
+        <div className="flex items-start justify-between">
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-bold">Inquiries</h1>
+              {newInquiriesCount > 0 && (
+                <Badge className="bg-blue-500 text-white">
+                  {newInquiriesCount} New
+                </Badge>
+              )}
+            </div>
+            <p className="text-muted-foreground">Manage customer inquiries and requests</p>
+          </div>
+          <Button
+            variant={notificationsEnabled ? "default" : "outline"}
+            size="sm"
+            onClick={toggleNotifications}
+            className="gap-2"
+          >
+            {notificationsEnabled ? (
+              <>
+                <Bell className="h-4 w-4" />
+                Notifications On
+              </>
+            ) : (
+              <>
+                <BellOff className="h-4 w-4" />
+                Notifications Off
+              </>
+            )}
+          </Button>
         </div>
 
         {isLoading ? (
@@ -206,6 +271,41 @@ export default function AdminInquiries() {
                   </SelectContent>
                 </Select>
               </div>
+
+              {selectedInquiry.phone && (
+                <div className="flex gap-2">
+                  <a
+                    href={getWhatsAppLink({
+                      date: selectedInquiry.date || undefined,
+                      people: selectedInquiry.peopleCount || undefined,
+                      hotel: selectedInquiry.hotel || undefined,
+                    })}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1"
+                  >
+                    <Button className="w-full bg-[#25D366] hover:bg-[#20BA5A] gap-2">
+                      <MessageCircle className="h-4 w-4" />
+                      Open WhatsApp
+                    </Button>
+                  </a>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => {
+                      const message = generateWhatsAppMessage({
+                        date: selectedInquiry.date || undefined,
+                        people: selectedInquiry.peopleCount || undefined,
+                        hotel: selectedInquiry.hotel || undefined,
+                      });
+                      navigator.clipboard.writeText(message);
+                      toast({ title: "Message copied to clipboard" });
+                    }}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
 
               <div>
                 <p className="text-sm text-muted-foreground mb-2">Internal Notes</p>

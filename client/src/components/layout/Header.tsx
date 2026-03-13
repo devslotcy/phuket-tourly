@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Menu, X, Globe, ChevronDown } from "lucide-react";
+import { Menu, X, Globe, ChevronDown, Palmtree } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/lib/i18n";
 import {
@@ -36,9 +36,12 @@ export function Header() {
         <div className="flex h-16 items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-2" data-testid="link-logo">
             <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">P</span>
+              <Palmtree className="text-primary-foreground h-6 w-6" />
             </div>
-            <span className="font-semibold text-lg hidden sm:block">Phuket Tours</span>
+            <div className="hidden sm:flex flex-col">
+              <span className="font-bold text-base leading-tight">{t("company.shortName")}</span>
+              <span className="text-xs text-muted-foreground leading-tight">Phuket</span>
+            </div>
           </Link>
 
           <nav className="hidden lg:flex items-center gap-1">
@@ -83,8 +86,8 @@ export function Header() {
             </DropdownMenu>
 
             <Link href="/contact" className="hidden sm:block">
-              <Button size="sm" data-testid="button-header-book">
-                {t("hero.cta.book")}
+              <Button size="sm" data-testid="button-header-contact">
+                {t("hero.cta.contact")}
               </Button>
             </Link>
 
@@ -116,8 +119,8 @@ export function Header() {
               </Link>
             ))}
             <Link href="/contact" onClick={() => setIsMenuOpen(false)}>
-              <Button className="w-full mt-2" data-testid="button-mobile-book">
-                {t("hero.cta.book")}
+              <Button className="w-full mt-2" data-testid="button-mobile-contact">
+                {t("hero.cta.contact")}
               </Button>
             </Link>
           </nav>

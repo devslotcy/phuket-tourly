@@ -30,9 +30,11 @@ export const tours = pgTable("tours", {
   slug: text("slug").notNull().unique(),
   featured: boolean("featured").default(false).notNull(),
   popular: boolean("popular").default(false).notNull(),
+  published: boolean("published").default(true).notNull(),
   priceFrom: integer("price_from").notNull(),
   duration: text("duration").notNull(),
   categoryId: varchar("category_id").references(() => categories.id),
+  ogImage: text("og_image"), // Optional: Override default OG image
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -107,6 +109,7 @@ export const blogPosts = pgTable("blog_posts", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   slug: text("slug").notNull().unique(),
   imageUrl: text("image_url"),
+  ogImage: text("og_image"), // Optional: Override default OG image
   tags: text("tags"),
   published: boolean("published").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -123,6 +126,16 @@ export const blogPostTranslations = pgTable("blog_post_translations", {
   excerpt: text("excerpt"),
   seoTitle: text("seo_title"),
   seoDescription: text("seo_description"),
+});
+
+// Redirects Table (for SEO-safe slug changes)
+export const redirects = pgTable("redirects", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  fromPath: text("from_path").notNull().unique(),
+  toPath: text("to_path").notNull(),
+  permanent: boolean("permanent").default(true).notNull(), // 301 vs 302
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 // Relations
@@ -183,6 +196,7 @@ export const insertFaqSchema = createInsertSchema(faqs).omit({ id: true, created
 export const insertReviewSchema = createInsertSchema(reviews).omit({ id: true, createdAt: true });
 export const insertBlogPostSchema = createInsertSchema(blogPosts).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertBlogPostTranslationSchema = createInsertSchema(blogPostTranslations).omit({ id: true });
+export const insertRedirectSchema = createInsertSchema(redirects).omit({ id: true, createdAt: true, updatedAt: true });
 
 // Types
 export type AdminUser = typeof adminUsers.$inferSelect;
@@ -214,6 +228,9 @@ export type InsertBlogPost = z.infer<typeof insertBlogPostSchema>;
 
 export type BlogPostTranslation = typeof blogPostTranslations.$inferSelect;
 export type InsertBlogPostTranslation = z.infer<typeof insertBlogPostTranslationSchema>;
+
+export type Redirect = typeof redirects.$inferSelect;
+export type InsertRedirect = z.infer<typeof insertRedirectSchema>;
 
 // Extended types for frontend
 export type TourWithDetails = Tour & {

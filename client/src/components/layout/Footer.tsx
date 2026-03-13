@@ -1,8 +1,9 @@
 import { Link } from "wouter";
-import { MapPin, Mail, Phone, Clock, Facebook, Instagram, Twitter } from "lucide-react";
+import { MapPin, Mail, Phone, Clock, Facebook, Instagram, Palmtree } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLanguage } from "@/lib/i18n";
+import { COMPANY } from "@shared/company";
 
 export function Footer() {
   const { t } = useLanguage();
@@ -23,23 +24,27 @@ export function Footer() {
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-lg">P</span>
+                <Palmtree className="text-primary-foreground h-6 w-6" />
               </div>
-              <span className="font-semibold text-lg">Phuket Tours</span>
+              <div className="flex flex-col">
+                <span className="font-bold text-base leading-tight">{t("company.shortName")}</span>
+                <span className="text-xs text-muted-foreground leading-tight">Phuket</span>
+              </div>
             </div>
             <p className="text-muted-foreground text-sm leading-relaxed">
-              Your trusted partner for unforgettable adventures in Phuket and beyond. We create memories that last a lifetime.
+              Your trusted travel agency in Patong, Phuket. We create unforgettable adventures and memories that last a lifetime.
             </p>
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" className="h-9 w-9" data-testid="link-social-facebook">
-                <Facebook className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" className="h-9 w-9" data-testid="link-social-instagram">
-                <Instagram className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" className="h-9 w-9" data-testid="link-social-twitter">
-                <Twitter className="h-4 w-4" />
-              </Button>
+              <a href={COMPANY.social.facebook} target="_blank" rel="noopener noreferrer">
+                <Button variant="ghost" size="icon" className="h-9 w-9" data-testid="link-social-facebook">
+                  <Facebook className="h-4 w-4" />
+                </Button>
+              </a>
+              <a href={COMPANY.social.instagram} target="_blank" rel="noopener noreferrer">
+                <Button variant="ghost" size="icon" className="h-9 w-9" data-testid="link-social-instagram">
+                  <Instagram className="h-4 w-4" />
+                </Button>
+              </a>
             </div>
           </div>
 
@@ -65,19 +70,25 @@ export function Footer() {
             <ul className="space-y-3 text-sm text-muted-foreground">
               <li className="flex items-start gap-2">
                 <MapPin className="h-4 w-4 mt-0.5 shrink-0" />
-                <span>123 Beach Road, Patong, Phuket 83150, Thailand</span>
+                <span>{COMPANY.address.full}</span>
               </li>
-              <li className="flex items-center gap-2">
-                <Mail className="h-4 w-4 shrink-0" />
-                <span>info@phuket-tours.com</span>
-              </li>
+              {COMPANY.email && (
+                <li className="flex items-center gap-2">
+                  <Mail className="h-4 w-4 shrink-0" />
+                  <a href={`mailto:${COMPANY.email}`} className="hover:text-foreground transition-colors">
+                    {COMPANY.email}
+                  </a>
+                </li>
+              )}
               <li className="flex items-center gap-2">
                 <Phone className="h-4 w-4 shrink-0" />
-                <span>+66 76 123 456</span>
+                <a href={`tel:${COMPANY.phone.international}`} className="hover:text-foreground transition-colors">
+                  {COMPANY.phone.display}
+                </a>
               </li>
               <li className="flex items-center gap-2">
                 <Clock className="h-4 w-4 shrink-0" />
-                <span>Mon-Sun: 8:00 AM - 8:00 PM</span>
+                <span>{COMPANY.hours.display}</span>
               </li>
             </ul>
           </div>
@@ -101,7 +112,7 @@ export function Footer() {
 
         <div className="mt-12 pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Phuket Tours. {t("footer.rights")}.
+            © {new Date().getFullYear()} {COMPANY.shortName}. {t("footer.rights")}.
           </p>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <Link href="/privacy" className="hover:text-foreground transition-colors">

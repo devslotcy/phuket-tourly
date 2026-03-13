@@ -9,6 +9,9 @@ import {
 } from "@/components/ui/accordion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLanguage } from "@/lib/i18n";
+import { SEO } from "@/components/SEO";
+import { FAQSchema } from "@/components/StructuredData";
+import { COMPANY } from "@shared/company";
 import type { FAQ } from "@shared/schema";
 
 export default function FAQPage() {
@@ -18,8 +21,24 @@ export default function FAQPage() {
     queryKey: ["/api/faqs"],
   });
 
+  // Prepare FAQ schema data
+  const faqSchemaData = faqs?.map((faq) => {
+    const translation = faq.translations?.find((tr) => tr.locale === locale) || faq.translations?.[0];
+    return {
+      question: translation?.question || "",
+      answer: translation?.answer || "",
+    };
+  }).filter(item => item.question && item.answer) || [];
+
   return (
     <PublicLayout>
+      <SEO
+        title="Frequently Asked Questions"
+        description="Find answers to common questions about tours, inquiries, and travel in Phuket with C Plus Andaman Travel. Learn about our services, WhatsApp contact, and tour details."
+        keywords={`Phuket tours FAQ, ${COMPANY.seo.keywords}, tour questions, travel FAQ Phuket`}
+        url={`${COMPANY.website}/faq`}
+      />
+      {faqSchemaData.length > 0 && <FAQSchema faqs={faqSchemaData} />}
       <section className="relative py-20 md:py-32 overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center"

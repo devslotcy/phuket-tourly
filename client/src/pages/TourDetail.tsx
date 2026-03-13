@@ -1,12 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams, Link } from "wouter";
-import { ArrowLeft, Clock, MapPin, Users, Star, Check, X } from "lucide-react";
+import { ArrowLeft, Clock, MapPin, Users, Star, Check, X, MessageCircle } from "lucide-react";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { InquiryForm } from "@/components/forms/InquiryForm";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getWhatsAppLink } from "@/lib/whatsapp";
 import {
   Accordion,
   AccordionContent,
@@ -14,6 +15,17 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { useLanguage } from "@/lib/i18n";
+import { SEO } from "@/components/SEO";
+import { TourSchema, BreadcrumbSchema } from "@/components/StructuredData";
+import { Breadcrumb } from "@/components/Breadcrumb";
+import { COMPANY } from "@shared/company";
+import {
+  generateTourSeoTitle,
+  generateTourSeoDescription,
+  getOgImageUrl,
+  getCanonicalUrl,
+  generateKeywords
+} from "@shared/seo-utils";
 import type { TourWithDetails } from "@shared/schema";
 
 export default function TourDetail() {
@@ -67,15 +79,57 @@ export default function TourDetail() {
     return text.split("\n").filter((item) => item.trim());
   };
 
+  // SEO metadata with automatic fallbacks
+  const tourTitle = translation?.title || tour.slug;
+  const seoTitle = generateTourSeoTitle(tourTitle, translation?.seoTitle);
+  const seoDescription = generateTourSeoDescription(
+    translation?.summary,
+    translation?.highlights,
+    translation?.seoDescription
+  );
+  const ogImage = getOgImageUrl(tour.ogImage, mainImage?.url);
+  const canonicalUrl = getCanonicalUrl(`/tours/${tour.slug}`);
+  const keywords = generateKeywords(
+    tourTitle,
+    tour.category?.nameEn,
+    null,
+    ["Phuket tours", "Thailand excursions"]
+  );
+
+  // Breadcrumb data
+  const breadcrumbItems = [
+    { label: t("nav.tours"), href: "/tours" },
+    { label: tourTitle },
+  ];
+
+  const breadcrumbSchema = [
+    { name: "Home", url: COMPANY.website },
+    { name: "Tours", url: `${COMPANY.website}/tours` },
+    { name: tourTitle, url: canonicalUrl },
+  ];
+
   return (
     <PublicLayout>
+      <SEO
+        title={seoTitle}
+        description={seoDescription}
+        keywords={keywords}
+        image={ogImage}
+        url={canonicalUrl}
+        type="article"
+      />
+      <TourSchema
+        name={tourTitle}
+        description={seoDescription}
+        image={ogImage}
+        price={tour.priceFrom}
+        duration={tour.duration}
+        url={canonicalUrl}
+      />
+      <BreadcrumbSchema items={breadcrumbSchema} />
+
       <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-8">
-        <Link href="/tours">
-          <Button variant="ghost" className="mb-6 gap-2" data-testid="button-back-tours">
-            <ArrowLeft className="h-4 w-4" />
-            {t("common.back")}
-          </Button>
-        </Link>
+        <Breadcrumb items={breadcrumbItems} />
 
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
@@ -251,7 +305,7 @@ export default function TourDetail() {
           </div>
 
           <div className="lg:col-span-1">
-            <div className="sticky top-24">
+            <div className="sticky top-24 space-y-4">
               <Card>
                 <CardHeader>
                   <div className="flex items-baseline justify-between">
@@ -259,10 +313,34 @@ export default function TourDetail() {
                       <span className="text-sm text-muted-foreground">{t("tours.from")}</span>
                       <p className="text-3xl font-bold text-primary">${tour.priceFrom}</p>
                     </div>
-                    <span className="text-sm text-muted-foreground">per person</span>
                   </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-3">
+                  <a
+                    href={getWhatsAppLink({
+                      tourName: translation?.title, locale: locale,
+                    })}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full"
+                  >
+                    <Button className="w-full bg-[#25D366] hover:bg-[#20BA5A] gap-2" size="lg">
+                      <MessageCircle className="h-5 w-5" />
+                      {t("inquiry.whatsappCta")}
+                    </Button>
+                  </a>
+
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-2 text-muted-foreground">
+                        or
+                      </span>
+                    </div>
+                  </div>
+
                   <InquiryForm tourId={tour.id} tourTitle={translation?.title} />
                 </CardContent>
               </Card>

@@ -19,10 +19,15 @@ const translations: Translations = {
   "nav.blog": { en: "Blog", tr: "Blog" },
   "nav.contact": { en: "Contact", tr: "İletişim" },
   
+  // Company
+  "company.name": { en: "C Plus Andaman Travel | Phuket", tr: "C Plus Andaman Travel | Phuket" },
+  "company.shortName": { en: "C Plus Andaman Travel", tr: "C Plus Andaman Travel" },
+  "company.tagline": { en: "Premium Tours & Excursions in Phuket", tr: "Phuket'te Premium Turlar ve Geziler" },
+
   // Hero
   "hero.title": { en: "Discover Paradise in Phuket", tr: "Phuket'te Cenneti Keşfedin" },
-  "hero.subtitle": { en: "Experience unforgettable adventures with our premium guided tours", tr: "Premium rehberli turlarımızla unutulmaz maceralar yaşayın" },
-  "hero.cta.book": { en: "Book Now", tr: "Hemen Rezervasyon" },
+  "hero.subtitle": { en: "Experience unforgettable adventures with C Plus Andaman Travel - your trusted travel agency in Patong", tr: "C Plus Andaman Travel ile unutulmaz maceralar yaşayın - Patong'daki güvenilir seyahat acenteniz" },
+  "hero.cta.contact": { en: "Contact Us", tr: "İletişime Geç" },
   "hero.cta.explore": { en: "Explore Tours", tr: "Turları Keşfet" },
   
   // Tours
@@ -40,17 +45,20 @@ const translations: Translations = {
   "tours.pickupInfo": { en: "Pickup Information", tr: "Alış Bilgileri" },
   "tours.cancellation": { en: "Cancellation Policy", tr: "İptal Politikası" },
   
-  // Booking Form
-  "booking.title": { en: "Book This Tour", tr: "Bu Turu Rezerve Et" },
-  "booking.name": { en: "Full Name", tr: "Ad Soyad" },
-  "booking.email": { en: "Email", tr: "E-posta" },
-  "booking.phone": { en: "Phone / WhatsApp", tr: "Telefon / WhatsApp" },
-  "booking.date": { en: "Preferred Date", tr: "Tercih Edilen Tarih" },
-  "booking.people": { en: "Number of People", tr: "Kişi Sayısı" },
-  "booking.hotel": { en: "Hotel Name", tr: "Otel Adı" },
-  "booking.message": { en: "Message", tr: "Mesaj" },
-  "booking.submit": { en: "Send Inquiry", tr: "Talep Gönder" },
-  "booking.success": { en: "Thank you! We'll contact you shortly.", tr: "Teşekkürler! En kısa sürede sizinle iletişime geçeceğiz." },
+  // Inquiry Form
+  "inquiry.title": { en: "Request Information", tr: "Bilgi Talebi" },
+  "inquiry.name": { en: "Full Name", tr: "Ad Soyad" },
+  "inquiry.email": { en: "Email", tr: "E-posta" },
+  "inquiry.phone": { en: "Phone / WhatsApp", tr: "Telefon / WhatsApp" },
+  "inquiry.date": { en: "Preferred Date", tr: "Tercih Edilen Tarih" },
+  "inquiry.people": { en: "Number of People", tr: "Kişi Sayısı" },
+  "inquiry.hotel": { en: "Hotel Name", tr: "Otel Adı" },
+  "inquiry.message": { en: "Message", tr: "Mesaj" },
+  "inquiry.submit": { en: "Send Inquiry", tr: "Talep Gönder" },
+  "inquiry.success": { en: "Thank you! We'll contact you shortly.", tr: "Teşekkürler! En kısa sürede sizinle iletişime geçeceğiz." },
+  "inquiry.whatsappCta": { en: "Message on WhatsApp", tr: "WhatsApp'ta Sor" },
+  "inquiry.checkAvailability": { en: "Check Availability", tr: "Müsaitlik Sorgula" },
+  "inquiry.getQuote": { en: "Get a Quote", tr: "Fiyat Teklifi Al" },
   
   // About
   "about.title": { en: "About Us", tr: "Hakkımızda" },
@@ -73,11 +81,20 @@ const translations: Translations = {
   
   // Contact
   "contact.title": { en: "Contact Us", tr: "İletişim" },
-  "contact.subtitle": { en: "We'd love to hear from you", tr: "Sizden haber almak isteriz" },
+  "contact.subtitle": { en: "Visit us in Patong or get in touch", tr: "Patong'daki ofisimizi ziyaret edin veya iletişime geçin" },
   "contact.address": { en: "Address", tr: "Adres" },
   "contact.email": { en: "Email", tr: "E-posta" },
   "contact.phone": { en: "Phone", tr: "Telefon" },
   "contact.hours": { en: "Working Hours", tr: "Çalışma Saatleri" },
+  "contact.getDirections": { en: "Get Directions", tr: "Yol Tarifi Al" },
+  "contact.followUs": { en: "Follow Us", tr: "Bizi Takip Edin" },
+
+  // Google Reviews
+  "reviews.google.title": { en: "Google Reviews", tr: "Google Yorumları" },
+  "reviews.google.basedOn": { en: "Based on {count} Google reviews", tr: "{count} Google yorumuna göre" },
+  "reviews.google.readMore": { en: "Read more on Google", tr: "Google'da devamını oku" },
+  "reviews.google.viewAll": { en: "View all reviews on Google", tr: "Tüm yorumları Google'da görüntüle" },
+  "reviews.google.loading": { en: "Loading reviews...", tr: "Yorumlar yükleniyor..." },
   
   // Footer
   "footer.quickLinks": { en: "Quick Links", tr: "Hızlı Linkler" },

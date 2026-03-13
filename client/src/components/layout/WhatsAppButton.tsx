@@ -1,25 +1,20 @@
 import { MessageCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { getWhatsAppLink } from "@/lib/whatsapp";
 
 export function WhatsAppButton() {
-  const phoneNumber = "6676123456";
-  const message = encodeURIComponent("Hello! I'm interested in booking a tour.");
-  const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
-
   return (
     <a
-      href={whatsappUrl}
+      href={getWhatsAppLink()}
       target="_blank"
       rel="noopener noreferrer"
-      className="fixed bottom-6 right-6 z-50"
+      className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 bg-[#25D366] hover:bg-[#20BA5A] text-white rounded-full shadow-lg transition-all hover:scale-110 group"
+      aria-label="Contact us on WhatsApp"
       data-testid="button-whatsapp"
     >
-      <Button
-        size="lg"
-        className="h-14 w-14 rounded-full bg-[#25D366] hover:bg-[#20BD5A] shadow-lg animate-pulse"
-      >
-        <MessageCircle className="h-6 w-6 text-white" />
-      </Button>
+      <MessageCircle className="h-7 w-7" />
+      <span className="absolute right-full mr-3 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+        Chat on WhatsApp
+      </span>
     </a>
   );
 }

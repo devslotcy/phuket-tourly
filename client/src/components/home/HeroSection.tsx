@@ -1,11 +1,35 @@
-import { Link } from "wouter";
-import { Search, Calendar, Users } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Link, useLocation } from "wouter";
+import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLanguage } from "@/lib/i18n";
 
 export function HeroSection() {
   const { t } = useLanguage();
+  const [, setLocation] = useLocation();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Live search - redirect to tours page as user types
+  useEffect(() => {
+    if (!searchQuery) return; // Don't redirect if search is empty
+
+    const timer = setTimeout(() => {
+      const params = new URLSearchParams();
+      params.set("q", searchQuery);
+      setLocation(`/tours?${params.toString()}`);
+    }, 500); // Wait 500ms after user stops typing
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, setLocation]);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    if (searchQuery) params.set("q", searchQuery);
+    const queryString = params.toString();
+    setLocation(`/tours${queryString ? `?${queryString}` : ""}`);
+  };
 
   return (
     <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
@@ -28,8 +52,8 @@ export function HeroSection() {
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
           <Link href="/contact">
-            <Button size="lg" className="min-w-[180px] text-base" data-testid="button-hero-book">
-              {t("hero.cta.book")}
+            <Button size="lg" className="min-w-[180px] text-base" data-testid="button-hero-contact">
+              {t("hero.cta.contact")}
             </Button>
           </Link>
           <Link href="/tours">
@@ -45,29 +69,25 @@ export function HeroSection() {
         </div>
 
         <div className="max-w-3xl mx-auto">
-          <div className="bg-white/95 backdrop-blur-md rounded-lg p-4 shadow-xl">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="relative md:col-span-2">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search tours..."
-                  className="pl-10 bg-background"
-                  data-testid="input-hero-search"
-                />
+          <form onSubmit={handleSearch}>
+            <div className="bg-white/95 backdrop-blur-md rounded-lg p-4 shadow-xl">
+              <div className="flex gap-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search tours..."
+                    className="pl-10 bg-background"
+                    data-testid="input-hero-search"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+                <Button type="submit" className="px-8" data-testid="button-hero-search">
+                  {t("common.search")}
+                </Button>
               </div>
-              <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="date"
-                  className="pl-10 bg-background"
-                  data-testid="input-hero-date"
-                />
-              </div>
-              <Button className="w-full" data-testid="button-hero-search">
-                {t("common.search")}
-              </Button>
             </div>
-          </div>
+          </form>
         </div>
       </div>
 

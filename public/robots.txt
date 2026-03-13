@@ -1,0 +1,9 @@
+# robots.txt for C Plus Andaman Travel | Phuket
+# https://cplusandaman.com
+
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api/admin
+
+Sitemap: https://cplusandaman.com/sitemap.xml
